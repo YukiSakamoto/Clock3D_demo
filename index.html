@@ -75,9 +75,9 @@
                 return stats;
             }
 
-            function generate_whitebox(width, height, depth, x, y, z){
+            function generate_whitebox(width, height, depth, x, y, z, colorcode){
                 let box_geom = new THREE.BoxGeometry(width, height, depth);
-                let box_material = new THREE.MeshLambertMaterial({color: 0xffffff});
+                let box_material = new THREE.MeshLambertMaterial({color: colorcode});
                 let box = new THREE.Mesh(box_geom, box_material);
                 box.position.x = x;
                 box.position.y = y;
@@ -140,9 +140,9 @@
             scene.add(plane);
 
             // Clock hands 
-            var sec_group = generate_whitebox(15.0, 0.1, 0.1,  4.0, 1.0, 0.0);
-            var min_group = generate_whitebox(15.0, 0.2, 0.2,  4.0, 1.0, 0.0);
-            var hour_group= generate_whitebox( 7.0, 0.4, 0.4,  2.5, 1.0, 0.0);
+            var sec_group = generate_whitebox(15.0, 0.1, 0.1,  4.0, 1.0, 0.0, 0xff0000);
+            var min_group = generate_whitebox(15.0, 0.2, 0.2,  4.0, 1.0, 0.0, 0xffffff);
+            var hour_group= generate_whitebox( 7.0, 0.4, 0.4,  2.5, 1.0, 0.0, 0xffffff);
             scene.add(sec_group);
             scene.add(min_group);
             scene.add(hour_group);
