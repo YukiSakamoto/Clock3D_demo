@@ -1,230 +1,26 @@
 <!DOCTYPE html>
+
 <html>
-    <head>
-        <title>Clock 3D</title>
-        <script src="./libs/three.js"></script>
-        <script src="./libs/stats.js"></script>
-        <script src="./libs/dat.gui.js"></script>
-        <script src="./libs/controls/TrackballControls.js"></script>
 
-        <style>
-            body {
-                margin: 0;
-                overflow: hidden;
-            }
-        </style>
-    </head>
-
-    <body>
-        <div id="Stats-output"></div>
-        <div id="WebGL-output"></div>
-
-        <script>
-        // Constants
-        const lightDefaultX = -20;
-        const lightDefaultY =  30;
-        const lightDefaultZ =  -5;
-        const planeDefaultX = 0;
-        const planeDefaultY = -0.2;
-        const planeDefaultZ = 0;
-        const axisDefaultVisible = false;
-        const castShadowDefault = true;
-
-        var controls = new function() {
-            this.light_x = lightDefaultX;
-            this.light_y = lightDefaultY;
-            this.light_z = lightDefaultZ;
-            this.plane_x = planeDefaultX;
-            this.plane_y = planeDefaultY;
-            this.plane_z = planeDefaultZ;
-            this.axis_visible = axisDefaultVisible;
-            this.castShadow = castShadowDefault;
+<head>
+    <title>Clock3d</title>
+    <script type="text/javascript" src="./libs/three.js"></script>
+    <script type="text/javascript" src="./libs/controls/TrackballControls.js"></script>
+    <script type="text/javascript" src="./libs/dat.gui.js"></script>
+    <script type="text/javascript" src="clock2_script.js"></script>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
         }
-        var gui = new dat.GUI();
-        var f1 = gui.addFolder('light_position');
-        f1.add(controls, 'light_x', -20, 20);
-        f1.add(controls, 'light_y', -30, 30);
-        f1.add(controls, 'light_z', -30, 30);
-        var f2 = gui.addFolder('plane_position');
-        f2.add(controls, 'plane_x', -5, 5);
-        f2.add(controls, 'plane_y', -5, 5);
-        f2.add(controls, 'plane_z', -5, 5);
-        gui.add(controls, 'axis_visible');
-        gui.add(controls, 'castShadow');
+    </style>
+</head>
+<body>
 
-        var camera;
-        var scene;
-        var renderer;
+<!-- Div which will hold the Output -->
+<div id="WebGL-output">
+</div>
 
-        function onResize() {
-            camera.aspect = window.innerWidth/window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-        window.addEventListener('resize', onResize, false);
-        
-        function init() {
-
-            function initStats() {
-                var stats = new Stats();
-                stats.setMode(0);
-                stats.domElement.style.position = 'absolute';
-                stats.domElement.style.left = '0px';
-                stats.domElement.style.top = '0px';
-                document.getElementById("Stats-output").appendChild(stats.domElement);
-                return stats;
-            }
-
-            function generate_whitebox(width, height, depth, x, y, z){
-                let box_geom = new THREE.BoxGeometry(width, height, depth);
-                let box_material = new THREE.MeshLambertMaterial({color: 0xffffff});
-                let box = new THREE.Mesh(box_geom, box_material);
-                box.position.x = x;
-                box.position.y = y;
-                box.position.z = z;
-                box.castShadow = true;
-                let group = new THREE.Group();
-                group.add(box);
-                return group;
-            }
-
-            function generate_tick(radius, number ) {
-                let tick_geom = new THREE.CylinderGeometry(0.5, 0.5, 0.4);
-                let tick_material = new THREE.MeshLambertMaterial({color: 0xffffff});
-                let tick = new THREE.Mesh(tick_geom, tick_material);
-                tick.position.x = radius * Math.cos( degree2radian(30.0 * number) );
-                tick.position.z = radius * Math.sin( degree2radian(30.0 * number) );
-                tick.position.y = 1.0;
-                tick.castShadow = true;
-                return tick;
-            }
-
-            var stats = initStats();
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-            camera.position.x = 0;
-            camera.position.y = 50.5;
-            camera.position.z = 0;
-            console.log(camera);
-            camera.lookAt(scene.position);
-
-            renderer = new THREE.WebGLRenderer();
-            renderer.setClearColor(new THREE.Color(0x1d3156));
-            renderer.setSize(window.innerWidth, window.innerHeight);
-
-            // set TrackballControls
-            document.body.appendChild(renderer.domElement);
-            var trackballControls = new THREE.TrackballControls(camera, renderer.domElement);
-            var clock = new THREE.Clock();
-            trackballControls.rotateSpeed = 2.0;
-            trackballControls.zoomSpeed = 2.0;
-            trackballControls.panSpeed = 2.0;
-
-            // Axes
-            var axes = new THREE.AxisHelper(20);
-            scene.add(axes);
-
-            // tick
-            for(var i = 0; i < 12; i++) {
-                tick = generate_tick(16, i);
-                scene.add(tick);
-            }
-
-            // generate plane
-            var planeGeometry = new THREE.PlaneGeometry(60, 40, 1, 1);
-            var planeMaterial = new THREE.MeshLambertMaterial({color: 0xffffff, side: THREE.DoubleSide});
-            var plane = new THREE.Mesh(planeGeometry, planeMaterial);
-            plane.rotation.x = -0.5 * Math.PI;
-            plane.position.y = -0.1;
-            scene.add(plane);
-
-            // Clock hands 
-            var sec_group = generate_whitebox(15.0, 0.1, 0.1,  4.0, 1.0, 0.0);
-            var min_group = generate_whitebox(15.0, 0.2, 0.2,  4.0, 1.0, 0.0);
-            var hour_group= generate_whitebox( 7.0, 0.4, 0.4,  2.5, 1.0, 0.0);
-            scene.add(sec_group);
-            scene.add(min_group);
-            scene.add(hour_group);
-
-            // center cylinder of clock hands
-            var center_cylinder_geom     = new THREE.CylinderGeometry(0.5, 0.5, 1.5);
-            var center_cylinder_material = new THREE.MeshLambertMaterial({color: 0xffffff});
-            var center_cylinder = new THREE.Mesh(center_cylinder_geom, center_cylinder_material);
-            center_cylinder.position.y = 0.5;
-            center_cylinder.castShadow = true;
-            scene.add(center_cylinder);
-
-            // Light
-            var spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.position.set(lightDefaultX, lightDefaultY, lightDefaultZ);
-            scene.add(spotLight);
-
-            //var ambiColor = "#0c0c0c";
-            //var ambientLight = new THREE.AmbientLight(ambiColor);
-            //scene.add(ambientLight);
-
-            // 以下は影の設定
-            renderer.shadowMap.enabled = true;
-            plane.receiveShadow  = true;
-            hour_group.castShadow= true;
-            sec_group.castShadow = true;
-            min_group.castShadow = true;
-            spotLight.castShadow = castShadowDefault;
-            console.log(sec_group);
-
-            var seconds;
-            var minutes;
-            var hours;
-            window.setInterval( ()=>{
-                var date = new Date;
-                seconds = date.getSeconds();
-                minutes = date.getMinutes();
-                hours = date.getHours();
-            }, 1000);
-
-            document.getElementById("WebGL-output").appendChild(renderer.domElement);
-            renderScene();
-
-            function degree2radian(deg) {
-                return deg / 360.0 * 2 * Math.PI;
-            }
-            function renderScene() {
-                stats.update();
-
-                var delta = clock.getDelta();
-                trackballControls.update(delta);
-
-                // light
-                spotLight.position.x = controls.light_x;
-                spotLight.position.y = controls.light_y;
-                spotLight.position.z = controls.light_z;
-                spotLight.castShadow = controls.castShadow;
-
-                // plane position
-                plane.position.x = controls.plane_x;
-                plane.position.y = controls.plane_y;
-                plane.position.z = controls.plane_z;
-
-                axes.visible = controls.axis_visible;
-
-                // update tick angle
-                var secondsAngle = -degree2radian(6 * seconds);
-                var minutesAngle = -degree2radian(6 * minutes );
-                var hoursAngle   = -degree2radian(30*hours + 0.5*minutes + 30.0/3600*seconds);
-                sec_group.rotation.y = secondsAngle;
-                min_group.rotation.y = minutesAngle;
-                hour_group.rotation.y= hoursAngle;
-                
-                requestAnimationFrame(renderScene);
-                renderer.render(scene, camera);
-            }
-
-        };
-
-        window.onload = init;
-        </script>
-
-
-    </body>
+</body>
 </html>
